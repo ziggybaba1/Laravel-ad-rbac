@@ -1,5 +1,6 @@
 {
-    "name": "veilofdusk/laravel-ad-rbac",
+    "name": "ziggybaba1/laravel-ad-rbac",
+    "type": "library",
     "description": "A comprehensive Active Directory authentication and Role-Based Access Control package for Laravel with column-level permission control",
     "keywords": [
         "laravel",
@@ -15,11 +16,11 @@
         "column-permissions"
     ],
     "license": "MIT",
-    "homepage": "https://gitlab.com/veilofdusk/laravel-ad-rbac",
+    "homepage": "https://gitlab.com/ziggybaba1/laravel-ad-rbac",
     "support": {
-        "issues": "https://gitlab.com/veilofdusk/laravel-ad-rbac/-/issues",
-        "source": "https://gitlab.com/veilofdusk/laravel-ad-rbac",
-        "docs": "https://gitlab.com/veilofdusk/laravel-ad-rbac/-/blob/main/README.md"
+        "issues": "https://gitlab.com/ziggybaba1/laravel-ad-rbac/-/issues",
+        "source": "https://gitlab.com/ziggybaba1/laravel-ad-rbac",
+        "docs": "https://gitlab.com/ziggybaba1/laravel-ad-rbac/-/blob/main/README.md"
     },
     "authors": [
         {
