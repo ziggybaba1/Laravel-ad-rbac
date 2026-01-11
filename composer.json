@@ -1,0 +1,123 @@
+{
+    "name": "veilofdusk/laravel-ad-rbac",
+    "description": "A comprehensive Active Directory authentication and Role-Based Access Control package for Laravel with column-level permission control",
+    "keywords": [
+        "laravel",
+        "ad",
+        "ldap",
+        "active-directory",
+        "rbac",
+        "permissions",
+        "authentication",
+        "authorization",
+        "roles",
+        "groups",
+        "column-permissions"
+    ],
+    "license": "MIT",
+    "homepage": "https://gitlab.com/veilofdusk/laravel-ad-rbac",
+    "support": {
+        "issues": "https://gitlab.com/veilofdusk/laravel-ad-rbac/-/issues",
+        "source": "https://gitlab.com/veilofdusk/laravel-ad-rbac",
+        "docs": "https://gitlab.com/veilofdusk/laravel-ad-rbac/-/blob/main/README.md"
+    },
+    "authors": [
+        {
+            "name": "Adejugbagbe Oluwaseyi",
+            "email": "seyiadejugbagbe@gmail.com",
+            "homepage": "https://github.com/seyiadejugbagbe",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^12.0",
+        "ext-ldap": "*",
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^7.10",
+        "illuminate/support": "^12.0",
+        "illuminate/database": "^12.0",
+        "illuminate/console": "^12.0",
+        "illuminate/http": "^12.0",
+        "illuminate/auth": "^12.0",
+        "illuminate/validation": "^12.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "orchestra/testbench": "^8.0",
+        "mockery/mockery": "^1.6",
+        "fakerphp/faker": "^1.23",
+        "laravel/pint": "^1.0",
+        "nunomaduro/collision": "^7.0",
+        "spatie/laravel-ray": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "LaravelAdRbac\\": "src/"
+        },
+        "files": []
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "LaravelAdRbac\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "@php ./vendor/bin/testbench package:discover --ansi"
+        ],
+        "test": "@php vendor/bin/phpunit",
+        "test-coverage": "@php vendor/bin/phpunit --coverage-html coverage",
+        "analyse": "@php vendor/bin/phpstan analyse",
+        "lint": "@php vendor/bin/pint --test",
+        "fix": "@php vendor/bin/pint",
+        "prepare": [
+            "@php vendor/bin/pint"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "LaravelAdRbac\\AdRbacServiceProvider"
+            ],
+            "aliases": {
+                "EmployeeApi": "LaravelAdRbac\\Facades\\EmployeeApi",
+                "AdAuth": "LaravelAdRbac\\Facades\\AdAuth",
+                "PermissionChecker": "LaravelAdRbac\\Facades\\PermissionChecker",
+                "AssignmentService": "LaravelAdRbac\\Facades\\AssignmentService"
+            }
+        },
+        "branch-alias": {
+            "dev-main": "1.0-dev",
+            "dev-develop": "1.1-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true,
+            "composer/package-versions-deprecated": true
+        },
+        "platform": {
+            "php": "8.1"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "suggest": {
+        "laravel/sanctum": "Required for API token authentication",
+        "spatie/laravel-permission": "Alternative permission package for inspiration",
+        "directorytree/ldaprecord": "Advanced LDAP integration",
+        "adldap2/adldap2-laravel": "Alternative AD authentication"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/veilofdusk"
+        },
+        {
+            "type": "patreon",
+            "url": "https://patreon.com/veilofdusk"
+        }
+    ]
+}
