@@ -28,12 +28,12 @@ Add the following to your project's composer.json file:
             "LaravelAdRbac\\": "src/"
         }
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "/Users/macbook/Documents/project/Eagle/laravel-ad-rbac"
-        }
-    ]
+   "repositories": [
+    {
+        "type": "vcs",
+        "url": "https://github.com/ziggybaba1/Laravel-ad-rbac.git"
+    }
+]
 }
 ```
 
@@ -41,7 +41,7 @@ Add the following to your project's composer.json file:
 Run the following command to install the package:
 
 ```bash
-composer require veilofdusk/laravel-ad-rbac:@dev
+composer require ziggybaba1/laravel-ad-rbac:@dev-main
 ```
 ### Step 3: Publish Configuration and Migrations
 Run the following command to publish the configuration and migrations:
