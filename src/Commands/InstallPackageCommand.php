@@ -49,7 +49,7 @@ class InstallPackageCommand extends Command
         }
 
         $this->newLine();
-        $this->info('✅ Package installed successfully!');
+        $this->info('Package installed successfully!');
         $this->newLine();
 
         $this->displayNextSteps();
@@ -82,7 +82,7 @@ class InstallPackageCommand extends Command
 
     protected function updateAuthConfig(): void
     {
-        $this->info('🔧 Updating authentication configuration...');
+        $this->info(' Updating authentication configuration...');
 
         $configPath = config_path('auth.php');
 
@@ -143,7 +143,7 @@ class InstallPackageCommand extends Command
 
     protected function registerMiddleware(): void
     {
-        $this->info('🔧 Registering middleware...');
+        $this->info(' Registering middleware...');
 
         $bootstrapPath = base_path('bootstrap/app.php');
 
@@ -193,7 +193,7 @@ PHP;
 
     protected function runMigrations(): void
     {
-        $this->info('🚀 Running migrations...');
+        $this->info('Running migrations...');
 
         try {
             // First, check if migrations table exists
@@ -214,7 +214,7 @@ PHP;
 
             // Provide helpful error message
             if (Str::contains($e->getMessage(), 'already in use')) {
-                $this->error('   ⚠️  Migration class name conflict detected!');
+                $this->error('   Migration class name conflict detected!');
                 $this->line('   This usually happens when migration class names are duplicated.');
                 $this->line('   Try: php artisan migrate:fresh --force');
             }
@@ -251,7 +251,7 @@ PHP;
 
     protected function displayNextSteps(): void
     {
-        $this->info('📋 NEXT STEPS:');
+        $this->info(' NEXT STEPS:');
         $this->newLine();
 
         $this->line('1. Configure your AD settings in config/ad-rbac.php:');
@@ -274,6 +274,6 @@ PHP;
         $this->line('   php artisan ad-rbac:test-ad --validate');
         $this->newLine();
 
-        $this->line('💡 Tip: Check the README.md for detailed usage instructions.');
+        $this->line(' Tip: Check the README.md for detailed usage instructions.');
     }
 }

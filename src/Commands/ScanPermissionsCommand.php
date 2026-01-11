@@ -16,7 +16,7 @@ class ScanPermissionsCommand extends Command
 
     public function handle(PermissionScanner $scanner)
     {
-        $this->info('🔍 Scanning for permissions...');
+        $this->info('Scanning for permissions...');
 
         if ($model = $this->option('model')) {
             $this->scanSingleModel($scanner, $model);
@@ -24,7 +24,7 @@ class ScanPermissionsCommand extends Command
             $this->scanAllModels($scanner);
         }
 
-        $this->info('✅ Permission scan completed');
+        $this->info('Permission scan completed');
     }
 
     protected function scanSingleModel(PermissionScanner $scanner, string $model): void

@@ -20,7 +20,7 @@ class SyncEmployeesCommand extends Command
 
     public function handle(EmployeeSyncService $syncService)
     {
-        $this->info('🔄 Syncing employee data...');
+        $this->info('Syncing employee data...');
 
         if ($this->option('force')) {
             Cache::clear();
@@ -37,7 +37,7 @@ class SyncEmployeesCommand extends Command
             $this->syncRecentEmployees($syncService);
         }
 
-        $this->info('✅ Employee sync completed');
+        $this->info('Employee sync completed');
     }
 
     // ... (sync methods implementation)

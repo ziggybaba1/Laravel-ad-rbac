@@ -22,6 +22,8 @@ Add the following to your project's composer.json file:
 
 ```json
 {
+     "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "App\\": "app/",
