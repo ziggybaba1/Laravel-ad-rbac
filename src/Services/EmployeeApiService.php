@@ -56,8 +56,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
         return [
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . ($this->config['api_token'] ?? ''),
-            'X-API-Key' => $this->config['api_key'] ?? '',
+            'X-API-KEY' => $this->config['secret_key'] ?? '',
             'X-Requested-With' => 'Laravel AD RBAC',
         ];
     }
