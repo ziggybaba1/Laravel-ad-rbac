@@ -10,16 +10,18 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up()
     {
-        Schema::create('group_role', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedInteger('group_id')->constrained()->onDelete('cascade');
-            $table->unsignedInteger('role_id')->constrained()->onDelete('cascade');
-            $table->timestamps();
+        if (!Schema::hasTable('group_role')) {
+            Schema::create('group_role', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedInteger('group_id')->constrained()->onDelete('cascade');
+                $table->unsignedInteger('role_id')->constrained()->onDelete('cascade');
+                $table->timestamps();
 
-            // Indexes
-            $table->index(['group_id', 'role_id']);
-            $table->unique(['group_id', 'role_id']); // Prevent duplicates
-        });
+                // Indexes
+                $table->index(['group_id', 'role_id']);
+                $table->unique(['group_id', 'role_id']); // Prevent duplicates
+            });
+        }
     }
 
     public function down()

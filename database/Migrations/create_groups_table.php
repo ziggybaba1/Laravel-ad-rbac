@@ -10,21 +10,23 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up()
     {
-        Schema::create('groups', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-            $table->unsignedInteger('parent_id')->nullable()->constrained('groups')->onDelete('cascade');
-            $table->boolean('is_system')->default(false);
-            $table->timestamps();
-            $table->softDeletes();
+        if (!Schema::hasTable('groups')) {
+            Schema::create('groups', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('slug')->unique();
+                $table->text('description')->nullable();
+                $table->unsignedInteger('parent_id')->nullable()->constrained('groups')->onDelete('cascade');
+                $table->boolean('is_system')->default(false);
+                $table->timestamps();
+                $table->softDeletes();
 
-            // Indexes
-            $table->index('slug');
-            $table->index('parent_id');
-            $table->index('is_system');
-        });
+                // Indexes
+                $table->index('slug');
+                $table->index('parent_id');
+                $table->index('is_system');
+            });
+        }
     }
 
     public function down()

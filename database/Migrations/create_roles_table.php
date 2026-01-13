@@ -10,21 +10,23 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up()
     {
-        Schema::create('roles', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-            $table->unsignedInteger('group_id')->nullable()->constrained('groups')->onDelete('set null');
-            $table->boolean('is_system')->default(false);
-            $table->timestamps();
-            $table->softDeletes();
+        if (!Schema::hasTable('roles')) {
+            Schema::create('roles', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('slug')->unique();
+                $table->text('description')->nullable();
+                $table->unsignedInteger('group_id')->nullable()->constrained('groups')->onDelete('set null');
+                $table->boolean('is_system')->default(false);
+                $table->timestamps();
+                $table->softDeletes();
 
-            // Indexes
-            $table->index('slug');
-            $table->index('group_id');
-            $table->index('is_system');
-        });
+                // Indexes
+                $table->index('slug');
+                $table->index('group_id');
+                $table->index('is_system');
+            });
+        }
     }
 
     public function down()
