@@ -204,7 +204,7 @@ PHP;
             // Run migrations using loadMigrationsFrom (no publishing needed)
             Artisan::call('migrate', [
                 '--force' => true,
-                '--path' => 'vendor/veilofdusk/laravel-ad-rbac/database/migrations'
+                '--path' => 'vendor/ziggybaba1/laravel-ad-rbac/database/migrations'
             ]);
 
             $this->info('   Database migrated successfully');
