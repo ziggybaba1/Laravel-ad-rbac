@@ -43,7 +43,7 @@ Add the following to your project's composer.json file:
 Run the following command to install the package:
 
 ```bash
-composer require ziggybaba1/laravel-ad-rbac:@dev-main
+composer require ziggybaba1/laravel-ad-rbac
 ```
 ### Step 3: Publish Configuration and Migrations
 Run the following command to publish the configuration and migrations:
