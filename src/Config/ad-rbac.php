@@ -19,7 +19,7 @@ return [
 
     'employee_api' => [
         'base_url' => env('EMPLOYEE_API_URL', ''),
-        'api_key' => env('EMPLOYEE_API_SECRET', ''),
+        'secret_key' => env('EMPLOYEE_API_SECRET', ''),
         'timeout' => env('EMPLOYEE_API_TIMEOUT', 30),
         'cache_ttl' => env('EMPLOYEE_CACHE_TTL', 3600), // 1 hour
     ],
