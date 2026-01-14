@@ -108,18 +108,20 @@ class CreateAdminCommand extends Command
     private function assignRoleToEmployee(Employee $employee, Role $role): void
     {
         // Temporarily use direct insert into assignments table
-        \DB::table('assignments')->insert([
-            'employee_id' => $employee->id,
-            'assignable_type' => 'App\Models\Role', // Use full class name
-            'assignable_id' => $role->id,
-            'assignment_reason' => 'System Administrator Setup via Command',
-            'assigned_by' => 0, // 0 for system
-            'assigned_at' => now(),
-            'is_active' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
+        $employer = \DB::table('assignments')->where('employee_id', $employee->id)->where('assignable_type', 'App\Models\Role')->where('assignable_id', $role->id)->first();
+        if (!$employer) {
+            \DB::table('assignments')->insert([
+                'employee_id' => $employee->id,
+                'assignable_type' => 'App\Models\Role', // Use full class name
+                'assignable_id' => $role->id,
+                'assignment_reason' => 'System Administrator Setup via Command',
+                'assigned_by' => 0, // 0 for system
+                'assigned_at' => now(),
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
         // Also maintain the roles relationship if it exists
         if (method_exists($employee, 'roles')) {
             try {
@@ -245,7 +247,7 @@ class CreateAdminCommand extends Command
 
         // Show password if newly created
         if ($employee->wasRecentlyCreated) {
-            $password = $this->option('password') ?? 'admin123';
+            $password = $this->option('password') ?? 'admin123!';
             $this->warn("⚠️  Default password: {$password}");
             $this->warn("⚠️  Please change the password on first login!");
         }
