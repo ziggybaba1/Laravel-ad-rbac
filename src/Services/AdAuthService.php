@@ -735,9 +735,9 @@ class AdAuthService implements AdAuthInterface
             $port = $this->config['port'] ?? 389;
 
             // Check if using SSL
-            if ($this->config['use_ssl'] ?? false) {
-                $server = "ldaps://{$server}";
-            }
+            // if ($this->config['use_ssl'] ?? false) {
+            //     $server = "ldaps://{$server}";
+            // }
 
             $connection = ldap_connect($server, $port);
             if (!$connection) {
@@ -750,6 +750,7 @@ class AdAuthService implements AdAuthInterface
             ldap_set_option($connection, LDAP_OPT_REFERRALS, 0);
             ldap_set_option($connection, LDAP_OPT_NETWORK_TIMEOUT, $this->config['timeout'] ?? 5);
             ldap_set_option($connection, LDAP_OPT_TIMELIMIT, $this->config['timeout'] ?? 5);
+            ldap_set_option($connection, LDAP_OPT_X_TLS_REQUIRE_CERT, LDAP_OPT_X_TLS_NEVER);
 
             // Start TLS if required
             if ($this->config['use_tls'] ?? false) {
