@@ -71,7 +71,7 @@ class InstallPackageCommand extends Command
         }
 
         // Copy config directly instead of vendor:publish to avoid route issues
-        $sourceConfig = __DIR__ . '/../../Config/ad-rbac.php';
+        $sourceConfig = __DIR__ . '/../../config/ad-rbac.php';
         if (File::exists($sourceConfig)) {
             File::copy($sourceConfig, $configPath);
             $this->info('   Configuration published: config/ad-rbac.php');
