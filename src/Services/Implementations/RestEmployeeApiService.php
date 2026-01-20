@@ -11,15 +11,15 @@ class RestEmployeeApiService extends EmployeeApiService
     /**
      * Fetch employee from REST API
      */
-    protected $config;
-    protected $makeRequest;
+    public $config;
+    public $makeRequest;
 
     public function __construct()
     {
         $this->config = config('ad-rbac.employee_api');
         parent::__construct();
     }
-    protected function fetchEmployeeFromApi(string $username): ?array
+    public function fetchEmployeeFromApi(string $username): ?array
     {
         // Get endpoint from config, default to '/employee/{username}'
         $endpointTemplate = $this->config['endpoints']['employee_by_username'] ?? '/employee/{username}';
@@ -48,7 +48,7 @@ class RestEmployeeApiService extends EmployeeApiService
     /**
      * Fetch multiple employees from REST API
      */
-    protected function fetchEmployeesFromApi(array $criteria, int $page, int $perPage): array
+    public function fetchEmployeesFromApi(array $criteria, int $page, int $perPage): array
     {
         $endpoint = $this->config['endpoints']['employees'] ?? '/employees';
 
@@ -80,7 +80,7 @@ class RestEmployeeApiService extends EmployeeApiService
     /**
      * Search employees in REST API
      */
-    protected function searchEmployeesFromApi(string $query, array $fields): array
+    public function searchEmployeesFromApi(string $query, array $fields): array
     {
         $endpoint = $this->config['endpoints']['search'] ?? '/employees/search';
 
@@ -102,7 +102,7 @@ class RestEmployeeApiService extends EmployeeApiService
     /**
      * Get employee by ID from REST API
      */
-    protected function getEmployeeByIdFromApi(string $employeeId): ?array
+    public function getEmployeeByIdFromApi(string $employeeId): ?array
     {
         $endpoint = $this->config['endpoints']['employee_by_id'] ?? '/employees/{id}';
         $endpoint = str_replace('{id}', $employeeId, $endpoint);
@@ -119,7 +119,7 @@ class RestEmployeeApiService extends EmployeeApiService
     /**
      * Get departments from REST API
      */
-    protected function getDepartmentsFromApi(): array
+    public function getDepartmentsFromApi(): array
     {
         $endpoint = $this->config['endpoints']['departments'] ?? '/departments';
 
@@ -135,7 +135,7 @@ class RestEmployeeApiService extends EmployeeApiService
     /**
      * Get zones from REST API
      */
-    protected function getZonesFromApi(): array
+    public function getZonesFromApi(): array
     {
         $endpoint = $this->config['endpoints']['zones'] ?? '/zones';
 
@@ -151,7 +151,7 @@ class RestEmployeeApiService extends EmployeeApiService
     /**
      * Get positions from REST API
      */
-    protected function getPositionsFromApi(): array
+    public function getPositionsFromApi(): array
     {
         $endpoint = $this->config['endpoints']['positions'] ?? '/positions';
 
@@ -167,7 +167,7 @@ class RestEmployeeApiService extends EmployeeApiService
     /**
      * Normalize employee data from API to our format
      */
-    protected function normalizeEmployeeData(array $apiData): array
+    public function normalizeEmployeeData(array $apiData): array
     {
         // Extract data from response (handles both direct data and nested 'data' key)
         $data = $apiData['data'] ?? $apiData;

@@ -9,7 +9,7 @@ use LaravelAdRbac\Models\Permission;
 
 class PermissionScanner
 {
-    protected $specialActions;
+    public $specialActions;
 
     public function __construct()
     {
@@ -99,7 +99,7 @@ class PermissionScanner
     /**
      * Extract full class name from file
      */
-    protected function getFullClassNameFromFile(string $file): ?string
+    public function getFullClassNameFromFile(string $file): ?string
     {
         $content = file_get_contents($file);
 
@@ -125,7 +125,7 @@ class PermissionScanner
     /**
      * Check if a model is permissionable
      */
-    protected function isPermissionableModel(ReflectionClass $reflection): bool
+    public function isPermissionableModel(ReflectionClass $reflection): bool
     {
         // Skip excluded models
         $excluded = config('ad-rbac.permissions.excluded_models', []);
@@ -193,7 +193,7 @@ class PermissionScanner
     /**
      * Detect special actions from model columns
      */
-    protected function detectSpecialActions($model): array
+    public function detectSpecialActions($model): array
     {
         $specialActions = [];
 
@@ -219,7 +219,7 @@ class PermissionScanner
     /**
      * Generate permission name
      */
-    protected function generatePermissionName(string $modelClass, string $action): string
+    public function generatePermissionName(string $modelClass, string $action): string
     {
         $modelName = class_basename($modelClass);
         return ucfirst($modelName) . ' ' . ucfirst($action);
@@ -228,7 +228,7 @@ class PermissionScanner
     /**
      * Generate permission slug
      */
-    protected function generatePermissionSlug(string $modelClass, string $action): string
+    public function generatePermissionSlug(string $modelClass, string $action): string
     {
         $modelName = class_basename($modelClass);
         return Str::snake($modelName) . '.' . $action;
@@ -237,7 +237,7 @@ class PermissionScanner
     /**
      * Clean up permissions for models that no longer exist
      */
-    protected function cleanupOrphanedPermissions(array $currentModels): void
+    public function cleanupOrphanedPermissions(array $currentModels): void
     {
         $orphaned = Permission::whereNotIn('module', $currentModels)
             ->where('module', 'LIKE', 'App\\Models\\%')

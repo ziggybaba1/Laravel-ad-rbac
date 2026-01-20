@@ -11,10 +11,10 @@ use Illuminate\Support\Str;
 
 class AdAuthService implements AdAuthInterface
 {
-    protected $ldapConnection = null;
-    protected $config;
-    protected $lastError = null;
-    protected $enabled = true;
+    public $ldapConnection = null;
+    public $config;
+    public $lastError = null;
+    public $enabled = true;
 
     public function __construct()
     {
@@ -44,7 +44,7 @@ class AdAuthService implements AdAuthInterface
         return $employee !== null;
     }
 
-    protected function validateAdCredentials(string $username, string $password): bool
+    public function validateAdCredentials(string $username, string $password): bool
     {
         // LDAP implementation
         $config = config('ad-rbac.ad');
@@ -85,7 +85,7 @@ class AdAuthService implements AdAuthInterface
         }
     }
 
-    // protected function validateAdCredentials(string $username, string $password): bool
+    // public function validateAdCredentials(string $username, string $password): bool
     // {
     //     $config = [
     //         'server' => '127.0.0.1',
@@ -728,7 +728,7 @@ class AdAuthService implements AdAuthInterface
 
     // Helper Methods
 
-    protected function connectToLdap()
+    public function connectToLdap()
     {
         try {
             $server = $this->config['server'];
@@ -768,7 +768,7 @@ class AdAuthService implements AdAuthInterface
         }
     }
 
-    protected function formatUsername(string $username): string
+    public function formatUsername(string $username): string
     {
         // If username already contains @, assume it's UPN
         if (Str::contains($username, '@')) {
@@ -789,7 +789,7 @@ class AdAuthService implements AdAuthInterface
         return $username;
     }
 
-    protected function buildUserSearchFilter(string $username): string
+    public function buildUserSearchFilter(string $username): string
     {
         if (Str::contains($username, '@')) {
             // User Principal Name (UPN)
@@ -803,7 +803,7 @@ class AdAuthService implements AdAuthInterface
         }
     }
 
-    protected function normalizeLdapEntry(array $entry): array
+    public function normalizeLdapEntry(array $entry): array
     {
         $result = [];
 
@@ -826,7 +826,7 @@ class AdAuthService implements AdAuthInterface
         return $result;
     }
 
-    protected function convertAdTimestamp(string $adTimestamp): ?string
+    public function convertAdTimestamp(string $adTimestamp): ?string
     {
         // AD timestamp is the number of 100-nanosecond intervals since January 1, 1601 (UTC)
         try {
@@ -840,14 +840,14 @@ class AdAuthService implements AdAuthInterface
         }
     }
 
-    protected function encodePassword(string $password): string
+    public function encodePassword(string $password): string
     {
         // AD requires password to be encoded in UTF-16LE and surrounded by quotes
         $password = "\"{$password}\"";
         return mb_convert_encoding($password, 'UTF-16LE', 'UTF-8');
     }
 
-    protected function bindWithAdmin($connection): bool
+    public function bindWithAdmin($connection): bool
     {
         if (empty($this->config['admin_username']) || empty($this->config['admin_password'])) {
             return false;
