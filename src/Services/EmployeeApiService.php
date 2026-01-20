@@ -11,10 +11,10 @@ use Illuminate\Http\Client\RequestException;
 
 abstract class EmployeeApiService implements EmployeeApiInterface
 {
-    public $config;
-    public $httpClient;
-    public $cacheEnabled = true;
-    public $cacheTtl = 3600; // 1 hour in seconds
+    protected $config;
+    protected $httpClient;
+    protected $cacheEnabled = true;
+    protected $cacheTtl = 3600; // 1 hour in seconds
 
     public function __construct()
     {
@@ -27,7 +27,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Create HTTP client with common configuration
      */
-    public function createHttpClient()
+    protected function createHttpClient()
     {
         $baseUrl = $this->config['base_url'] ?? '';
 
@@ -51,7 +51,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Get default headers for API requests
      */
-    public function getDefaultHeaders(): array
+    protected function getDefaultHeaders(): array
     {
         return [
             'Accept' => 'application/json',
@@ -97,7 +97,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Actual API call to fetch employee - must be implemented by concrete class
      */
-    abstract public function fetchEmployeeFromApi(string $username): ?array;
+    abstract protected function fetchEmployeeFromApi(string $username): ?array;
 
     /**
      * Fetch multiple employees by criteria
@@ -130,7 +130,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Actual API call for multiple employees
      */
-    abstract public function fetchEmployeesFromApi(array $criteria, int $page, int $perPage): array;
+    abstract protected function fetchEmployeesFromApi(array $criteria, int $page, int $perPage): array;
 
     /**
      * Search employees by various fields
@@ -163,7 +163,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Actual API call for search
      */
-    abstract public function searchEmployeesFromApi(string $query, array $fields): array;
+    abstract protected function searchEmployeesFromApi(string $query, array $fields): array;
 
     /**
      * Get employee by employee ID
@@ -196,7 +196,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Actual API call for employee by ID
      */
-    abstract public function getEmployeeByIdFromApi(string $employeeId): ?array;
+    abstract protected function getEmployeeByIdFromApi(string $employeeId): ?array;
 
     /**
      * Get department structure
@@ -235,7 +235,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Actual API call for departments
      */
-    abstract public function getDepartmentsFromApi(): array;
+    abstract protected function getDepartmentsFromApi(): array;
 
     /**
      * Get department structure
@@ -274,7 +274,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Actual API call for zones
      */
-    abstract public function getZonesFromApi(): array;
+    abstract protected function getZonesFromApi(): array;
 
     /**
      * Get positions/job titles
@@ -313,7 +313,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Actual API call for positions
      */
-    abstract public function getPositionsFromApi(): array;
+    abstract protected function getPositionsFromApi(): array;
 
     /**
      * Validate API connection
@@ -394,7 +394,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Generate cache key
      */
-    public function getCacheKey(string $key): string
+    protected function getCacheKey(string $key): string
     {
         return "ad_rbac:api:" . $key;
     }
@@ -402,7 +402,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Log API errors
      */
-    public function logError(string $method, \Exception $e, array $context = []): void
+    protected function logError(string $method, \Exception $e, array $context = []): void
     {
         Log::error("Employee API Error in {$method}", [
             'error' => $e->getMessage(),
@@ -419,7 +419,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Make authenticated API request
      */
-    public function makeRequest(string $method, string $endpoint, array $data = []): ?array
+    protected function makeRequest(string $method, string $endpoint, array $data = []): ?array
     {
         // Ensure httpClient is initialized
         if (!$this->httpClient) {
@@ -471,7 +471,7 @@ abstract class EmployeeApiService implements EmployeeApiInterface
     /**
      * Handle error responses
      */
-    public function handleErrorResponse($response): void
+    protected function handleErrorResponse($response): void
     {
         $status = $response->status();
         $body = $response->body();

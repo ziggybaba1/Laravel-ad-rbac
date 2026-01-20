@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\DB;
 
 class RbacService
 {
-    public $permissionRepository;
-    public $roleRepository;
-    public $groupRepository;
+    protected $permissionRepository;
+    protected $roleRepository;
+    protected $groupRepository;
 
-    public $auditLogService;
+    protected $auditLogService;
 
     public function __construct(
         PermissionRepository $permissionRepository = null,
@@ -911,7 +911,7 @@ class RbacService
     /**
      * Build hierarchical group tree
      */
-    public function buildGroupTree(Collection $groups): Collection
+    protected function buildGroupTree(Collection $groups): Collection
     {
         $groupDict = [];
         $tree = new Collection();
@@ -1006,7 +1006,7 @@ class RbacService
     /**
      * Recursively delete group children
      */
-    public function deleteGroupChildren(Group $group): void
+    protected function deleteGroupChildren(Group $group): void
     {
         foreach ($group->children as $child) {
             $this->deleteGroupChildren($child);
