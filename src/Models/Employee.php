@@ -43,6 +43,88 @@ class Employee extends Authenticatable
         return $this->hasMany(Assignment::class);
     }
 
+    public function syncRoles(array $roleIds, $reason = null, $assignedBy = null)
+    {
+        $assignedBy = $assignedBy ?: auth()->id();
+
+        foreach ($roleIds as $roleId) {
+            $role = Role::find($roleId);
+
+            if ($role && !$this->hasAssignment($role)) {
+                $this->assign($role, $reason, null, $assignedBy);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Sync roles with detaching (remove roles not in array)
+     */
+    public function syncRolesWithDetach(array $roleIds, $reason = null, $assignedBy = null)
+    {
+        $assignedBy = $assignedBy ?: auth()->id();
+
+        // Get current active role assignments
+        $currentRoleIds = $this->roleAssignments()->pluck('assignable_id')->toArray();
+
+        // Roles to remove
+        $rolesToRemove = array_diff($currentRoleIds, $roleIds);
+        foreach ($rolesToRemove as $roleId) {
+            $role = Role::find($roleId);
+            if ($role) {
+                $this->unassign($role, $reason);
+            }
+        }
+
+        // Roles to add
+        $rolesToAdd = array_diff($roleIds, $currentRoleIds);
+        foreach ($rolesToAdd as $roleId) {
+            $role = Role::find($roleId);
+            if ($role && !$this->hasAssignment($role)) {
+                $this->assign($role, $reason, null, $assignedBy);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Sync groups without detaching existing ones
+     */
+    public function syncGroups(array $groupIds, $reason = null, $assignedBy = null)
+    {
+        $assignedBy = $assignedBy ?: auth()->id();
+
+        foreach ($groupIds as $groupId) {
+            $group = Group::find($groupId);
+
+            if ($group && !$this->hasAssignment($group)) {
+                $this->assign($group, $reason, null, $assignedBy);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Sync permissions without detaching existing ones
+     */
+    public function syncPermissions(array $permissionIds, $reason = null, $assignedBy = null)
+    {
+        $assignedBy = $assignedBy ?: auth()->id();
+
+        foreach ($permissionIds as $permissionId) {
+            $permission = Permission::find($permissionId);
+
+            if ($permission && !$this->hasAssignment($permission)) {
+                $this->assign($permission, $reason, null, $assignedBy);
+            }
+        }
+
+        return $this;
+    }
+
     /**
      * Relationship: Employee's group assignments
      */
