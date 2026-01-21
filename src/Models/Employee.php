@@ -43,87 +43,7 @@ class Employee extends Authenticatable
         return $this->hasMany(Assignment::class);
     }
 
-    public function syncRoles(array $roleIds, $reason = null, $assignedBy = null)
-    {
-        $assignedBy = $assignedBy ?: auth()->id();
 
-        foreach ($roleIds as $roleId) {
-            $role = Role::find($roleId);
-
-            if ($role && !$this->hasAssignment($role)) {
-                $this->assign($role, $reason, null, $assignedBy);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Sync roles with detaching (remove roles not in array)
-     */
-    public function syncRolesWithDetach(array $roleIds, $reason = null, $assignedBy = null)
-    {
-        $assignedBy = $assignedBy ?: auth()->id();
-
-        // Get current active role assignments
-        $currentRoleIds = $this->roleAssignments()->pluck('assignable_id')->toArray();
-
-        // Roles to remove
-        $rolesToRemove = array_diff($currentRoleIds, $roleIds);
-        foreach ($rolesToRemove as $roleId) {
-            $role = Role::find($roleId);
-            if ($role) {
-                $this->unassign($role, $reason);
-            }
-        }
-
-        // Roles to add
-        $rolesToAdd = array_diff($roleIds, $currentRoleIds);
-        foreach ($rolesToAdd as $roleId) {
-            $role = Role::find($roleId);
-            if ($role && !$this->hasAssignment($role)) {
-                $this->assign($role, $reason, null, $assignedBy);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Sync groups without detaching existing ones
-     */
-    public function syncGroups(array $groupIds, $reason = null, $assignedBy = null)
-    {
-        $assignedBy = $assignedBy ?: auth()->id();
-
-        foreach ($groupIds as $groupId) {
-            $group = Group::find($groupId);
-
-            if ($group && !$this->hasAssignment($group)) {
-                $this->assign($group, $reason, null, $assignedBy);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Sync permissions without detaching existing ones
-     */
-    public function syncPermissions(array $permissionIds, $reason = null, $assignedBy = null)
-    {
-        $assignedBy = $assignedBy ?: auth()->id();
-
-        foreach ($permissionIds as $permissionId) {
-            $permission = Permission::find($permissionId);
-
-            if ($permission && !$this->hasAssignment($permission)) {
-                $this->assign($permission, $reason, null, $assignedBy);
-            }
-        }
-
-        return $this;
-    }
 
     /**
      * Relationship: Employee's group assignments
@@ -354,5 +274,255 @@ class Employee extends Authenticatable
     public function getFullNameAttribute(): string
     {
         return trim($this->first_name . ' ' . $this->last_name);
+    }
+
+    public function syncRoles(array $roleIds, string $reason = null, $assignedBy = null, $expiresAt = null)
+    {
+        $assignedBy = $assignedBy ?: auth()->id();
+        $addedRoles = [];
+
+        foreach ($roleIds as $roleId) {
+            $role = Role::find($roleId);
+
+            if ($role && !$this->hasAssignment($role)) {
+                try {
+                    $assignment = $this->assign($role, $reason, $expiresAt, $assignedBy);
+                    $addedRoles[] = $role;
+                } catch (\Exception $e) {
+                    // Log the error but continue with other roles
+                    \Log::warning("Failed to assign role {$roleId} to employee {$this->id}: " . $e->getMessage());
+                }
+            }
+        }
+
+        return $addedRoles;
+    }
+
+    /**
+     * Sync roles with detaching (remove roles not in array)
+     */
+    public function syncRolesWithDetach(array $roleIds, string $reason = null, $assignedBy = null, $expiresAt = null)
+    {
+        $assignedBy = $assignedBy ?: auth()->id();
+
+        // Get current active role assignments
+        $currentRoleIds = $this->roleAssignments()->pluck('assignable_id')->toArray();
+
+        // Roles to remove
+        $rolesToRemove = array_diff($currentRoleIds, $roleIds);
+        foreach ($rolesToRemove as $roleId) {
+            $role = Role::find($roleId);
+            if ($role) {
+                $this->unassign($role, $reason ?: 'Role sync removal');
+            }
+        }
+
+        // Roles to add
+        $rolesToAdd = array_diff($roleIds, $currentRoleIds);
+        $addedRoles = [];
+        foreach ($rolesToAdd as $roleId) {
+            $role = Role::find($roleId);
+            if ($role) {
+                try {
+                    $assignment = $this->assign($role, $reason, $expiresAt, $assignedBy);
+                    $addedRoles[] = $role;
+                } catch (\Exception $e) {
+                    \Log::warning("Failed to assign role {$roleId} to employee {$this->id}: " . $e->getMessage());
+                }
+            }
+        }
+
+        return [
+            'added' => $addedRoles,
+            'removed' => $rolesToRemove
+        ];
+    }
+
+    /**
+     * Sync groups without detaching existing ones
+     */
+    public function syncGroups(array $groupIds, string $reason = null, $assignedBy = null, $expiresAt = null)
+    {
+        $assignedBy = $assignedBy ?: auth()->id();
+        $addedGroups = [];
+
+        foreach ($groupIds as $groupId) {
+            $group = Group::find($groupId);
+
+            if ($group && !$this->hasAssignment($group)) {
+                try {
+                    $assignment = $this->assign($group, $reason, $expiresAt, $assignedBy);
+                    $addedGroups[] = $group;
+                } catch (\Exception $e) {
+                    \Log::warning("Failed to assign group {$groupId} to employee {$this->id}: " . $e->getMessage());
+                }
+            }
+        }
+
+        return $addedGroups;
+    }
+
+    /**
+     * Sync groups with detaching (remove groups not in array)
+     */
+    public function syncGroupsWithDetach(array $groupIds, string $reason = null, $assignedBy = null, $expiresAt = null)
+    {
+        $assignedBy = $assignedBy ?: auth()->id();
+
+        // Get current active group assignments
+        $currentGroupIds = $this->groupAssignments()->pluck('assignable_id')->toArray();
+
+        // Groups to remove
+        $groupsToRemove = array_diff($currentGroupIds, $groupIds);
+        foreach ($groupsToRemove as $groupId) {
+            $group = Group::find($groupId);
+            if ($group) {
+                $this->unassign($group, $reason ?: 'Group sync removal');
+            }
+        }
+
+        // Groups to add
+        $groupsToAdd = array_diff($groupIds, $currentGroupIds);
+        $addedGroups = [];
+        foreach ($groupsToAdd as $groupId) {
+            $group = Group::find($groupId);
+            if ($group) {
+                try {
+                    $assignment = $this->assign($group, $reason, $expiresAt, $assignedBy);
+                    $addedGroups[] = $group;
+                } catch (\Exception $e) {
+                    \Log::warning("Failed to assign group {$groupId} to employee {$this->id}: " . $e->getMessage());
+                }
+            }
+        }
+
+        return [
+            'added' => $addedGroups,
+            'removed' => $groupsToRemove
+        ];
+    }
+
+    /**
+     * Sync permissions without detaching existing ones
+     */
+    public function syncPermissions(array $permissionIds, string $reason = null, $assignedBy = null, $expiresAt = null)
+    {
+        $assignedBy = $assignedBy ?: auth()->id();
+        $addedPermissions = [];
+
+        foreach ($permissionIds as $permissionId) {
+            $permission = Permission::find($permissionId);
+
+            if ($permission && !$this->hasAssignment($permission)) {
+                try {
+                    $assignment = $this->assign($permission, $reason, $expiresAt, $assignedBy);
+                    $addedPermissions[] = $permission;
+                } catch (\Exception $e) {
+                    \Log::warning("Failed to assign permission {$permissionId} to employee {$this->id}: " . $e->getMessage());
+                }
+            }
+        }
+
+        return $addedPermissions;
+    }
+
+    /**
+     * Bulk sync for multiple employees
+     * This is useful when you need to assign the same roles/groups to multiple employees
+     */
+    public static function bulkSyncRoles(array $employeeIds, array $roleIds, string $reason = null, $assignedBy = null, $expiresAt = null)
+    {
+        $assignedBy = $assignedBy ?: auth()->id();
+        $results = [
+            'success' => [],
+            'errors' => []
+        ];
+
+        foreach ($employeeIds as $employeeId) {
+            $employee = self::find($employeeId);
+            if ($employee) {
+                try {
+                    $addedRoles = $employee->syncRoles($roleIds, $reason, $assignedBy, $expiresAt);
+                    $results['success'][$employeeId] = [
+                        'employee' => $employee->full_name,
+                        'added_roles' => count($addedRoles)
+                    ];
+                } catch (\Exception $e) {
+                    $results['errors'][$employeeId] = $e->getMessage();
+                }
+            } else {
+                $results['errors'][$employeeId] = 'Employee not found';
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Bulk sync groups for multiple employees
+     */
+    public static function bulkSyncGroups(array $employeeIds, array $groupIds, string $reason = null, $assignedBy = null, $expiresAt = null)
+    {
+        $assignedBy = $assignedBy ?: auth()->id();
+        $results = [
+            'success' => [],
+            'errors' => []
+        ];
+
+        foreach ($employeeIds as $employeeId) {
+            $employee = self::find($employeeId);
+            if ($employee) {
+                try {
+                    $addedGroups = $employee->syncGroups($groupIds, $reason, $assignedBy, $expiresAt);
+                    $results['success'][$employeeId] = [
+                        'employee' => $employee->full_name,
+                        'added_groups' => count($addedGroups)
+                    ];
+                } catch (\Exception $e) {
+                    $results['errors'][$employeeId] = $e->getMessage();
+                }
+            } else {
+                $results['errors'][$employeeId] = 'Employee not found';
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Get all available roles that employee doesn't have
+     */
+    public function getAvailableRoles()
+    {
+        $currentRoleIds = $this->roleAssignments()->pluck('assignable_id')->toArray();
+
+        return Role::whereNotIn('id', $currentRoleIds)
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Get all available groups that employee doesn't have
+     */
+    public function getAvailableGroups()
+    {
+        $currentGroupIds = $this->groupAssignments()->pluck('assignable_id')->toArray();
+
+        return Group::whereNotIn('id', $currentGroupIds)
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Get all available permissions that employee doesn't have (directly)
+     */
+    public function getAvailablePermissions()
+    {
+        $currentPermissionIds = $this->permissionAssignments()->pluck('assignable_id')->toArray();
+
+        return Permission::whereNotIn('id', $currentPermissionIds)
+            ->orderBy('module')
+            ->orderBy('name')
+            ->get();
     }
 }
