@@ -5,6 +5,7 @@ namespace LaravelAdRbac\Traits;
 use LaravelAdRbac\Models\AuditLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 trait HasAuditLog
 {
@@ -33,10 +34,11 @@ trait HasAuditLog
         static::deleted(function ($model) {
             $model->logAuditEvent('deleted', null, $model->getOriginal());
         });
-
-        static::restored(function ($model) {
-            $model->logAuditEvent('restored', $model->getAttributes(), null);
-        });
+        if (in_array(SoftDeletes::class, class_uses_recursive(static::class))) {
+            static::restored(function ($model) {
+                $model->logAuditEvent('restored', $model->getAttributes(), null);
+            });
+        }
     }
 
     /**
