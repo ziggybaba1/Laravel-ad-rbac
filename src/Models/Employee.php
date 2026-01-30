@@ -4,12 +4,11 @@ namespace LaravelAdRbac\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use LaravelAdRbac\Traits\HasPermissions;
 use Illuminate\Notifications\Notifiable;
 
 class Employee extends Authenticatable
 {
-    use HasFactory, Notifiable, HasPermissions;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'ad_username',
