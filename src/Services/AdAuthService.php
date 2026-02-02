@@ -40,7 +40,6 @@ class AdAuthService implements AdAuthInterface
 
         // 3. Update or create employee record
         // $employee = $this->updateOrCreateEmployee($username, $employeeData);
-
         return true;
     }
 
