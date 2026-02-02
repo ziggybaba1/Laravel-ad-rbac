@@ -39,9 +39,9 @@ class AdAuthService implements AdAuthInterface
         }
 
         // 3. Update or create employee record
-        $employee = $this->updateOrCreateEmployee($username, $employeeData);
+        // $employee = $this->updateOrCreateEmployee($username, $employeeData);
 
-        return $employee !== null;
+        return true;
     }
 
     protected function validateAdCredentials(string $username, string $password): bool
