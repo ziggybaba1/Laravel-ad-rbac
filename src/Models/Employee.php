@@ -525,12 +525,4 @@ class Employee extends Authenticatable
             ->orderBy('name')
             ->get();
     }
-    protected static function booted()
-    {
-        parent::booted();
-
-        static::restored(function ($employee) {
-            // Your custom restoration logic here
-        });
-    }
 }

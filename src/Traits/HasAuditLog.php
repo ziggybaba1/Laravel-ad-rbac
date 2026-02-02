@@ -34,11 +34,6 @@ trait HasAuditLog
         static::deleted(function ($model) {
             $model->logAuditEvent('deleted', null, $model->getOriginal());
         });
-        if (in_array(SoftDeletes::class, class_uses_recursive(static::class))) {
-            static::restored(function ($model) {
-                $model->logAuditEvent('restored', $model->getAttributes(), null);
-            });
-        }
     }
 
     /**
@@ -85,7 +80,6 @@ trait HasAuditLog
             'created' => "{$modelName} [ID: {$key}] was created",
             'updated' => "{$modelName} [ID: {$key}] was updated",
             'deleted' => "{$modelName} [ID: {$key}] was deleted",
-            'restored' => "{$modelName} [ID: {$key}] was restored",
             default => "{$modelName} [ID: {$key}] {$event}",
         };
     }
@@ -99,7 +93,6 @@ trait HasAuditLog
             'created' => 'CREATE',
             'updated' => 'UPDATE',
             'deleted' => 'DELETE',
-            'restored' => 'RESTORE',
             default => strtoupper($event),
         };
     }
