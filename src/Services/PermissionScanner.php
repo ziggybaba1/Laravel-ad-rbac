@@ -222,7 +222,11 @@ class PermissionScanner
     protected function generatePermissionName(string $modelClass, string $action): string
     {
         $modelName = class_basename($modelClass);
-        return ucfirst($modelName) . ' ' . ucfirst($action);
+
+        // Convert PascalCase/camelCase to words and title case
+        $formattedModelName = Str::title(preg_replace('/(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/', ' ', $modelName));
+
+        return ucfirst($action) . ' ' . $formattedModelName;
     }
 
     /**
