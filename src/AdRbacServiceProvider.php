@@ -66,7 +66,7 @@ class AdRbacServiceProvider extends ServiceProvider
                 Commands\ScanPermissionsCommand::class,
                 Commands\SyncEmployeesCommand::class,
                 Commands\CreateAdminCommand::class,
-                // Commands\ManageRolesCommand::class,
+                Commands\ManageRolesCommand::class,
                 // Commands\CleanupOrphanedCommand::class,
                 // Commands\ExportAssignmentsCommand::class,
             ]);
