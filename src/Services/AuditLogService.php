@@ -6,6 +6,8 @@ use LaravelAdRbac\Models\AuditLog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Carbon\Carbon;
 
 class AuditLogService
 {
@@ -377,5 +379,394 @@ class AuditLogService
         }
 
         return 'Unknown';
+    }
+
+    /**
+     * Export audit logs to CSV
+     */
+    public function exportToCsv(array $filters = [], array $options = []): StreamedResponse
+    {
+        $query = AuditLog::query();
+        $this->applyFilters($query, $filters);
+
+        // Apply date range if provided in filters
+        if (isset($filters['from_date']) && isset($filters['to_date'])) {
+            $query->whereBetween('created_at', [$filters['from_date'], $filters['to_date']]);
+        }
+
+        // Load relationships
+        $query->with(['auditable', 'causer']);
+
+        // Apply sorting
+        $sortField = $options['sort_field'] ?? 'created_at';
+        $sortDirection = $options['sort_direction'] ?? 'desc';
+        $query->orderBy($sortField, $sortDirection);
+
+        // Apply limit
+        $limit = $options['limit'] ?? null;
+        if ($limit) {
+            $query->limit($limit);
+        }
+
+        $logs = $query->get();
+
+        return $this->generateCsvResponse($logs, $options);
+    }
+
+    /**
+     * Export audit logs to CSV with chunking for large datasets
+     */
+    public function exportLargeToCsv(array $filters = [], array $options = []): StreamedResponse
+    {
+        $headers = $this->getCsvHeaders($options);
+
+        return response()->streamDownload(function () use ($filters, $options, $headers) {
+            $file = fopen('php://output', 'w');
+
+            // Add UTF-8 BOM for Excel compatibility
+            fputs($file, "\xEF\xBB\xBF");
+
+            // Write headers
+            fputcsv($file, $headers);
+
+            // Process in chunks
+            AuditLog::query()
+                ->when($filters, fn($q) => $this->applyFilters($q, $filters))
+                ->when(
+                    isset($filters['from_date']) && isset($filters['to_date']),
+                    fn($q) => $q->whereBetween('created_at', [$filters['from_date'], $filters['to_date']])
+                )
+                ->with(['auditable', 'causer'])
+                ->orderBy('created_at', 'desc')
+                ->chunk(1000, function ($logs) use ($file, $options) {
+                    foreach ($logs as $log) {
+                        fputcsv($file, $this->formatLogForCsv($log, $options));
+                    }
+                });
+
+            fclose($file);
+        }, $this->generateFilename($options));
+    }
+
+    /**
+     * Generate CSV response
+     */
+    protected function generateCsvResponse($logs, array $options = []): StreamedResponse
+    {
+        $headers = $this->getCsvHeaders($options);
+        $filename = $this->generateFilename($options);
+
+        return response()->streamDownload(function () use ($logs, $options, $headers) {
+            $file = fopen('php://output', 'w');
+
+            // Add UTF-8 BOM for Excel compatibility
+            fputs($file, "\xEF\xBB\xBF");
+
+            // Write headers
+            fputcsv($file, $headers);
+
+            // Write data
+            foreach ($logs as $log) {
+                fputcsv($file, $this->formatLogForCsv($log, $options));
+            }
+
+            fclose($file);
+        }, $filename);
+    }
+
+    /**
+     * Get CSV headers based on options
+     */
+    protected function getCsvHeaders(array $options = []): array
+    {
+        $format = $options['format'] ?? 'detailed';
+
+        if ($format === 'summary') {
+            return [
+                'ID',
+                'Timestamp',
+                'Event',
+                'Action',
+                'Model Type',
+                'Model ID',
+                'Model Identifier',
+                'Causer',
+                'IP Address',
+                'Description',
+            ];
+        }
+
+        if ($format === 'minimal') {
+            return [
+                'Timestamp',
+                'Event',
+                'Model',
+                'Causer',
+                'Description',
+            ];
+        }
+
+        // Detailed format (default)
+        return [
+            'ID',
+            'Timestamp',
+            'Event',
+            'Action',
+            'Model Type',
+            'Model ID',
+            'Model Identifier',
+            'Causer Type',
+            'Causer ID',
+            'Causer Name',
+            'Causer Email',
+            'IP Address',
+            'User Agent',
+            'URL',
+            'Description',
+            'Changed Fields',
+            'Old Values',
+            'New Values',
+            'Properties',
+        ];
+    }
+
+    /**
+     * Format a single log for CSV export
+     */
+    protected function formatLogForCsv($log, array $options = []): array
+    {
+        $format = $options['format'] ?? 'detailed';
+
+        $modelIdentifier = $this->getModelIdentifier($log->auditable);
+        $causerInfo = $this->getCauserInfo($log->causer);
+
+        if ($format === 'summary') {
+            return [
+                $log->id,
+                $log->created_at->toDateTimeString(),
+                $log->event,
+                $log->action,
+                $this->simplifyModelName($log->model_type),
+                $log->auditable_id,
+                $modelIdentifier,
+                $causerInfo['name'] ?? 'System',
+                $log->ip_address ?? 'N/A',
+                $log->description ?? '',
+            ];
+        }
+
+        if ($format === 'minimal') {
+            return [
+                $log->created_at->toDateTimeString(),
+                $log->event,
+                $this->simplifyModelName($log->model_type) . ' #' . $log->auditable_id,
+                $causerInfo['name'] ?? 'System',
+                $log->description ?? '',
+            ];
+        }
+
+        // Detailed format (default)
+        return [
+            $log->id,
+            $log->created_at->toDateTimeString(),
+            $log->event,
+            $log->action,
+            $log->model_type,
+            $log->auditable_id,
+            $modelIdentifier,
+            $log->causer_type,
+            $log->causer_id,
+            $causerInfo['full_name'] ?? 'N/A',
+            $causerInfo['email'] ?? 'N/A',
+            $log->ip_address ?? 'N/A',
+            $this->truncateString($log->user_agent, 100),
+            $log->url ?? 'N/A',
+            $log->description ?? '',
+            $log->changed_fields ? implode('; ', $log->changed_fields) : '',
+            $log->old_values ? $this->formatJsonForCsv($log->old_values) : '',
+            $log->new_values ? $this->formatJsonForCsv($log->new_values) : '',
+            $log->properties ? $this->formatJsonForCsv($log->properties) : '',
+        ];
+    }
+
+    /**
+     * Generate filename for export
+     */
+    protected function generateFilename(array $options = []): string
+    {
+        $prefix = $options['filename_prefix'] ?? 'audit_logs';
+        $format = $options['format'] ?? 'detailed';
+        $date = Carbon::now()->format('Y-m-d_His');
+
+        return "{$prefix}_{$format}_{$date}.csv";
+    }
+
+    /**
+     * Get model identifier (name/title/email)
+     */
+    protected function getModelIdentifier($model): string
+    {
+        if (!$model) {
+            return 'N/A';
+        }
+
+        if (isset($model->name)) {
+            return $model->name;
+        }
+        if (isset($model->title)) {
+            return $model->title;
+        }
+        if (isset($model->email)) {
+            return $model->email;
+        }
+        if (isset($model->code)) {
+            return $model->code;
+        }
+
+        return '#' . $model->getKey();
+    }
+
+    /**
+     * Get causer information
+     */
+    protected function getCauserInfo($causer): array
+    {
+        if (!$causer) {
+            return [
+                'name' => 'System',
+                'email' => null,
+            ];
+        }
+
+        $info = [
+            'name' => null,
+            'email' => null,
+        ];
+
+        if (method_exists($causer, 'getName')) {
+            $info['name'] = $causer->getName();
+        } elseif (isset($causer->name)) {
+            $info['name'] = $causer->name;
+        } elseif (isset($causer->full_name)) {
+            $info['name'] = $causer->full_name;
+        }
+
+        if (isset($causer->email)) {
+            $info['email'] = $causer->email;
+        }
+
+        return $info;
+    }
+
+    /**
+     * Simplify model name (remove namespace)
+     */
+    protected function simplifyModelName(string $modelType): string
+    {
+        $parts = explode('\\', $modelType);
+        return end($parts);
+    }
+
+    /**
+     * Format JSON for CSV (limit length)
+     */
+    protected function formatJsonForCsv($data, int $maxLength = 500): string
+    {
+        if (!$data) {
+            return '';
+        }
+
+        $json = json_encode($data, JSON_PRETTY_PRINT);
+
+        if (strlen($json) > $maxLength) {
+            $json = substr($json, 0, $maxLength) . '...';
+        }
+
+        return $json;
+    }
+
+    /**
+     * Truncate string to maximum length
+     */
+    protected function truncateString(?string $string, int $maxLength): string
+    {
+        if (!$string) {
+            return '';
+        }
+
+        if (strlen($string) <= $maxLength) {
+            return $string;
+        }
+
+        return substr($string, 0, $maxLength) . '...';
+    }
+
+    /**
+     * Get available events for filtering
+     */
+    public function getAvailableEvents(): array
+    {
+        return AuditLog::select('event')
+            ->distinct()
+            ->whereNotNull('event')
+            ->orderBy('event')
+            ->pluck('event')
+            ->toArray();
+    }
+
+    /**
+     * Get available actions for filtering
+     */
+    public function getAvailableActions(): array
+    {
+        return AuditLog::select('action')
+            ->distinct()
+            ->whereNotNull('action')
+            ->orderBy('action')
+            ->pluck('action')
+            ->toArray();
+    }
+
+    /**
+     * Get available model types for filtering
+     */
+    public function getAvailableModelTypes(): array
+    {
+        return AuditLog::select('model_type')
+            ->distinct()
+            ->whereNotNull('model_type')
+            ->orderBy('model_type')
+            ->pluck('model_type')
+            ->map(fn($type) => [
+                'value' => $type,
+                'label' => $this->simplifyModelName($type)
+            ])
+            ->toArray();
+    }
+
+    /**
+     * Get export statistics
+     */
+    public function getExportStats(array $filters = []): array
+    {
+        $query = AuditLog::query();
+        $this->applyFilters($query, $filters);
+
+        if (isset($filters['from_date']) && isset($filters['to_date'])) {
+            $query->whereBetween('created_at', [$filters['from_date'], $filters['to_date']]);
+        }
+
+        return [
+            'total_records' => $query->count(),
+            'date_range' => [
+                'earliest' => $query->clone()->min('created_at')?->toDateString(),
+                'latest' => $query->clone()->max('created_at')?->toDateString(),
+            ],
+            'event_breakdown' => $query->clone()
+                ->select('event', DB::raw('COUNT(*) as count'))
+                ->groupBy('event')
+                ->pluck('count', 'event')
+                ->toArray(),
+        ];
     }
 }

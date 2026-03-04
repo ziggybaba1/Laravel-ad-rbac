@@ -135,8 +135,8 @@ trait HasAuditLog
      */
     protected function getModelIdentifier(): string
     {
-        if (isset($this->name)) {
-            return $this->name;
+        if (isset($this->full_name)) {
+            return $this->full_name;
         }
         if (isset($this->title)) {
             return $this->title;
@@ -146,6 +146,12 @@ trait HasAuditLog
         }
         if (isset($this->description)) {
             return $this->description;
+        }
+        if (isset($this->name)) {
+            return $this->name;
+        }
+        if (isset($this->label)) {
+            return $this->label;
         }
         return "ID: {$this->getKey()}";
     }
