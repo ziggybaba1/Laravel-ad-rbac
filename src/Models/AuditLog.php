@@ -3,6 +3,7 @@
 namespace LaravelAdRbac\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class AuditLog extends Model
@@ -47,9 +48,9 @@ class AuditLog extends Model
     /**
      * Get the user/entity that performed the action
      */
-    public function causer(): MorphTo
+    public function causer(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(Employee::class, 'causer_id');
     }
 
     /**

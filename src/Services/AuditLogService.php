@@ -559,7 +559,7 @@ class AuditLogService
                 $log->created_at->toDateTimeString(),
                 $log->event,
                 $this->simplifyModelName($log->model_type) . ' #' . $log->auditable_id,
-                $causerInfo['first_name'] . '' . $causerInfo['last_name'] ?? 'System',
+                $causerInfo['name'] ?? 'System',
                 $log->description ?? '',
             ];
         }
@@ -574,7 +574,7 @@ class AuditLogService
             $log->auditable_id,
             $modelIdentifier,
             $log->causer_id,
-            $causerInfo['first_name'] . ' ' . $causerInfo['last_name'] ?? 'N/A',
+            $causerInfo['name'] ?? 'N/A',
             $causerInfo['email'] ?? 'N/A',
             $log->ip_address ?? 'N/A',
             $this->truncateString($log->user_agent, 100),
@@ -643,8 +643,8 @@ class AuditLogService
 
         if (method_exists($causer, 'getName')) {
             $info['name'] = $causer->getName();
-        } elseif (isset($causer->name)) {
-            $info['name'] = $causer->name;
+        } elseif (isset($causer->first_name)) {
+            $info['name'] = $causer->first_name . ' ' . $causer->last_name;
         } elseif (isset($causer->full_name)) {
             $info['name'] = $causer->full_name;
         }
