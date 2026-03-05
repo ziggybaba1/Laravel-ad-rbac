@@ -163,8 +163,8 @@ trait HasAuditLog
     {
         $fields = $this->getNotableFields($newValues);
         return empty($fields)
-            ? "{$modelName} '{$identifier}' was created"
-            : "{$modelName} '{$identifier}' was created with: " . implode(', ', $fields);
+            ? "{\Illuminate\Support\Str::headline($modelName)} '{$identifier}' was created"
+            : "{\Illuminate\Support\Str::headline($modelName)} '{$identifier}' was created with: " . implode(', ', $fields);
     }
 
     /**
@@ -175,10 +175,10 @@ trait HasAuditLog
         $changes = $this->getFormattedChanges($oldValues, $newValues);
 
         if (empty($changes)) {
-            return "{$modelName} '{$identifier}' was updated (no significant changes)";
+            return "{\Illuminate\Support\Str::headline($modelName)} '{$identifier}' was updated (no significant changes)";
         }
 
-        return "{$modelName} '{$identifier}' was updated: " . implode('; ', $changes);
+        return "{\Illuminate\Support\Str::headline($modelName)} '{$identifier}' was updated: " . implode('; ', $changes);
     }
 
     /**
@@ -188,8 +188,8 @@ trait HasAuditLog
     {
         $fields = $this->getNotableFields($oldValues);
         return empty($fields)
-            ? "{$modelName} '{$identifier}' was deleted"
-            : "{$modelName} '{$identifier}' was deleted (had: " . implode(', ', $fields) . ")";
+            ? "{\Illuminate\Support\Str::headline($modelName)} '{$identifier}' was deleted"
+            : "{\Illuminate\Support\Str::headline($modelName)} '{$identifier}' was deleted (had: " . implode(', ', $fields) . ")";
     }
 
     /**
@@ -210,10 +210,10 @@ trait HasAuditLog
         $changes = $this->getFormattedChanges($oldValues, $newValues);
 
         if (empty($changes)) {
-            return "{$modelName} '{$identifier}' was updated via updateOrCreate (matched: {$searchCriteria})";
+            return "{\Illuminate\Support\Str::headline($modelName)} '{$identifier}' was updated via updateOrCreate (matched: {$searchCriteria})";
         }
 
-        return "{$modelName} '{$identifier}' was updated via updateOrCreate (matched: {$searchCriteria}): " . implode('; ', $changes);
+        return "{\Illuminate\Support\Str::headline($modelName)} '{$identifier}' was updated via updateOrCreate (matched: {$searchCriteria}): " . implode('; ', $changes);
     }
 
     /**
@@ -223,7 +223,7 @@ trait HasAuditLog
     {
         $assignee = $newValues['assigned_to'] ?? $newValues['user_id'] ?? $newValues['assignee'] ?? 'someone';
         $assigneeName = $this->getAssigneeName($assignee);
-        return "{$modelName} '{$identifier}' was assigned to {$assigneeName}";
+        return "{\Illuminate\Support\Str::headline($modelName)} '{$identifier}' was assigned to {$assigneeName}";
     }
 
     /**
@@ -233,7 +233,7 @@ trait HasAuditLog
     {
         $assignee = $oldValues['assigned_to'] ?? $oldValues['user_id'] ?? $oldValues['assignee'] ?? 'someone';
         $assigneeName = $this->getAssigneeName($assignee);
-        return "{$modelName} '{$identifier}' was unassigned from {$assigneeName}";
+        return "{\Illuminate\Support\Str::headline($modelName)} '{$identifier}' was unassigned from {$assigneeName}";
     }
 
     /**

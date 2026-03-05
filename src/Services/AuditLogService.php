@@ -585,7 +585,7 @@ class AuditLogService
             $log->changed_fields ? implode('; ', $log->changed_fields) : '',
             $log->old_values ? $this->formatJsonForCsv($log->old_values) : '',
             $log->new_values ? $this->formatJsonForCsv($log->new_values) : '',
-            $log->properties ? $this->formatJsonForCsv($log->properties) : '',
+            // $log->properties ? $this->formatJsonForCsv($log->properties) : '',
         ];
     }
 
